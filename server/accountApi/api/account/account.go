@@ -16,3 +16,8 @@ func (*accountApi) GetAccountInfo(c *gin.Context) {
 	resp, err := accountService.UserService.GetAccountInfo(c, &accountApiModel.GetUserInfoReq{AccountId: accountId})
 	xgin.ResponseWithLang(c, resp, err)
 }
+func (*accountApi) AddAccount(c *gin.Context) {
+	accountId := c.GetString("accountId")
+	resp, err := accountService.UserService.GetAccountInfo(c, &accountApiModel.GetUserInfoReq{AccountId: accountId})
+	xgin.ResponseWithLang(c, resp, err)
+}

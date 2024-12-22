@@ -6,7 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/luxun9527/zlog"
 	"github/lunxun9527/bestpractice/pkg/i18n"
-	"github/lunxun9527/bestpractice/pkg/xgin"
+	"github/lunxun9527/bestpractice/pkg/xvalidator"
 	"github/lunxun9527/bestpractice/server/accountApi/config"
 	"github/lunxun9527/bestpractice/server/accountApi/global"
 	"github/lunxun9527/bestpractice/server/accountApi/rpcClient"
@@ -33,6 +33,6 @@ func Init(confPath string) {
 	i18n.SetDefaultTranslator(translator)
 
 	//设置gin参数校验失败翻译
-	v, _ := xgin.NewValidateTranslator(binding.Validator.Engine().(*validator.Validate))
-	xgin.SetDefaultValidateTranslator(v)
+	v, _ := xvalidator.NewValidateTranslator(binding.Validator.Engine().(*validator.Validate))
+	xvalidator.SetDefaultValidateTranslator(v)
 }

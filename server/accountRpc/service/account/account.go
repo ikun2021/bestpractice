@@ -10,7 +10,9 @@ import (
 	"github/lunxun9527/bestpractice/pkg/xjwt"
 	"github/lunxun9527/bestpractice/server/accountRpc/common/model"
 	"github/lunxun9527/bestpractice/server/accountRpc/common/rediskey"
+	dbModel "github/lunxun9527/bestpractice/server/accountRpc/dao/account/model"
 	"github/lunxun9527/bestpractice/server/accountRpc/global"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -42,8 +44,19 @@ func (accountRpc) GetAccountInfo(ctx context.Context, req *accountPb.GetAccountI
 		AccountName: accountInfo.AccountName,
 	}, nil
 }
-func (accountRpc) RegisterUser(context.Context, *accountPb.RegisterUserReq) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterUser not implemented")
+func (accountRpc) RegisterUser(ctx context.Context, req *accountPb.RegisterUserReq) (*emptypb.Empty, error) {
+	account := global.AccountDB.Account
+	password, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+
+	account.WithContext(ctx).Create(&dbModel.Account{
+		AccountID:   req.AccountId,
+		AccountName: req.AccountName,
+		Password:    string(password),
+		CreatedAt:   time.Now().Unix(),
+		UpdatedAt:   time.Now().Unix(),
+	})
+
+	return &emptypb.Empty{}, nil
 }
 func (accountRpc) ValidateToken(ctx context.Context, req *accountPb.ValidateTokenReq) (*accountPb.ValidateTokenResp, error) {
 	userInfo, err := xjwt.ParseToken[model.UserInfo](req.Token)

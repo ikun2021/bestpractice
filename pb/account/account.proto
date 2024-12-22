@@ -31,6 +31,7 @@ message GetAccountInfoResp{
 message RegisterUserReq{
   string accountId = 1;
   string accountName = 2;
+  string password = 3;
 }
 
 message ValidateTokenReq{

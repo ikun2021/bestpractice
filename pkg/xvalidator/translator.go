@@ -1,4 +1,4 @@
-package xgin
+package xvalidator
 
 import (
 	"errors"

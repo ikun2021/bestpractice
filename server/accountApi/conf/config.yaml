@@ -9,7 +9,7 @@ rpcClient:
       timeOut: 5 # 超时时间
 
 lang:
-  path: "E:\\demoproject\\go-lib\\example\\server\\accountApi\\lang"
+  path: "E:\\openproject\\bestpractice\\server\\accountApi\\lang"
 
 logger:
   level: debug  #日志等级 debug info warn error

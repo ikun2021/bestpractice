@@ -73,6 +73,9 @@ func NewTranslatorFormFile(langFilePath string) (*Translator, error) {
 	bundle.RegisterUnmarshalFunc(_defaultFormat, toml.Unmarshal)
 	var defaultMsgs = map[string]string{}
 	err := filepath.WalkDir(langFilePath, func(path string, d os.DirEntry, err error) error {
+		if d == nil {
+			return nil
+		}
 		if d.IsDir() {
 			return nil
 		}

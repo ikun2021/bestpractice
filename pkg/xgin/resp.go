@@ -1,10 +1,14 @@
 package xgin
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/spf13/cast"
+	"github/lunxun9527/bestpractice/common/errs"
 	"github/lunxun9527/bestpractice/pkg/i18n"
+	"github/lunxun9527/bestpractice/pkg/xvalidator"
 	"google.golang.org/grpc/status"
 	"net/http"
 )
@@ -33,8 +37,20 @@ func FailWithLang(c *gin.Context) {
 func ResponseWithLang(c *gin.Context, resp interface{}, err error) {
 	lang := c.GetHeader("lang")
 	if err != nil {
+		// 参数校验错误
+		var e1 validator.ValidationErrors
+		ok := errors.As(err, &e1)
+		paramMsg := ""
+		if ok {
+			paramMsg = ": " + xvalidator.TranslateFirst(lang, err)
+			err = errs.ParamValidateFailedErr
+		}
+		//grpc 以及业务错误
 		code := status.Code(err)
 		msg := i18n.Translate(lang, cast.ToString(uint32(code)))
+		if ok {
+			msg += paramMsg
+		}
 		Result(cast.ToInt(uint32(code)), Empty, msg, c)
 	} else {
 		Result(SUCCESS, resp, "success", c)
@@ -60,7 +76,7 @@ func Result(code int, data interface{}, msg string, c *gin.Context) {
 }
 
 func Ok(c *gin.Context) {
-	Result(SUCCESS, map[string]interface{}{}, "操作成功", c)
+	Result(SUCCESS, map[string]interface{}{}, "success", c)
 }
 
 func OkWithMessage(message string, c *gin.Context) {
@@ -68,7 +84,7 @@ func OkWithMessage(message string, c *gin.Context) {
 }
 
 func OkWithData(data interface{}, c *gin.Context) {
-	Result(SUCCESS, data, "查询成功", c)
+	Result(SUCCESS, data, "success", c)
 }
 
 func OkWithDetailed(data interface{}, message string, c *gin.Context) {

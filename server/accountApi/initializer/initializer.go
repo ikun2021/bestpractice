@@ -32,7 +32,8 @@ func Init(confPath string) {
 	}
 	i18n.SetDefaultTranslator(translator)
 
-	//设置gin参数校验失败翻译
+	//设置gin参数校验
 	v, _ := xvalidator.NewValidateTranslator(binding.Validator.Engine().(*validator.Validate))
 	xvalidator.SetDefaultValidateTranslator(v)
+	xvalidator.RegisterValidations()
 }

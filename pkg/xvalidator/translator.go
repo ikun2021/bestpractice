@@ -41,6 +41,7 @@ import (
 
 var (
 	_defaultValidateTranslator = &ValidateTranslator{}
+	_defaultLang               = "en"
 )
 
 func SetDefaultValidateTranslator(translator *ValidateTranslator) {
@@ -54,6 +55,7 @@ func GetDefaultValidateTranslator() *ValidateTranslator {
 // ValidateTranslator  参数校验结果翻译
 type ValidateTranslator struct {
 	translators map[string]ut.Translator
+	validate    *validator.Validate
 }
 
 var (
@@ -111,6 +113,8 @@ func NewValidateTranslator(validate *validator.Validate) (*ValidateTranslator, e
 		m[lang] = tran
 	}
 	translator.translators = m
+	translator.validate = validate
+
 	return &translator, nil
 }
 
@@ -166,6 +170,10 @@ func (tl *ValidateTranslator) TranslateFirst(locale string, err error) string {
 
 }
 func TranslateFirst(locale string, err error) string {
+	_, ok := _defaultValidateTranslator.translators[locale]
+	if !ok {
+		locale = _defaultLang
+	}
 	return _defaultValidateTranslator.TranslateFirst(locale, err)
 }
 

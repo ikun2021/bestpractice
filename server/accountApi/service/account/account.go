@@ -23,3 +23,15 @@ func (*userService) GetAccountInfo(ctx context.Context, req *accountApiModel.Get
 		AccountName: accountInfo.AccountName,
 	}, nil
 }
+func (*userService) AddAccount(ctx context.Context, req *accountApiModel.AddAccountReq) error {
+	_, err := rpcClient.AccountClient.RegisterUser(ctx, &accountPb.RegisterUserReq{
+		AccountId:   req.AccountID,
+		AccountName: req.AccountName,
+		Password:    req.Password,
+	})
+	if err != nil {
+		zlog.Errorf("GetAccountInfo err: %v", err)
+		return err
+	}
+	return nil
+}

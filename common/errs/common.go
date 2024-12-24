@@ -24,10 +24,15 @@ const (
 	TimoutOutCode
 )
 
+const (
+	ParamValidateFailed Code = 170000
+)
+
 var (
 	// 通用错误
-	InternalErr       = InternalCode.error()
-	RedisErr          = RedisErrCode.error()
-	RecordNotFoundErr = RecordNotFoundErrCode.error()
-	TimeOutErr        = TimoutOutCode.error()
+	InternalErr            = InternalCode.error()
+	RedisErr               = RedisErrCode.error()
+	RecordNotFoundErr      = RecordNotFoundErrCode.error()
+	TimeOutErr             = TimoutOutCode.error()
+	ParamValidateFailedErr = ParamValidateFailed.error()
 )

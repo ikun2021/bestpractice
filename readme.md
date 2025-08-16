@@ -1,54 +1,118 @@
-## go私有库目录结构
+# go私有库目录结构
 
 私有仓库中一般会存什么内容，应该如何组织目录结构。
 
-1、将中间件sdk的再次封装，主要是将中间件各种配置项加载后，初始化实例。能用框架就是框架没有再自己搞。其他框架有的，就抄过来，推荐目录名字 
+## 将中间件sdk的再次封装
+
+主要是将中间件各种配置项加载后，初始化实例。能用框架就是框架没有再自己搞。其他框架有的，就抄过来，推荐目录名字 
 
 **pkg/gormx或pkg/xgorm**
 
 **pkg/kafkax pkg/xkafka** 
 
-**pkg/xnacos pkg/nacosx 最好不要和官方库同名**
+示例go-zero的redis  目录下有redis的配置和初始化redis客户端的代码。
 
-2、grpc pb协议。推荐是分仓库，不要多个项目的协议放在一个仓库中，避免相互影响。推荐 
+```go
+type (
+    // A RedisConf is a redis config.
+    RedisConf struct {
+       Host     string
+       Type     string `json:",default=node,options=node|cluster"`
+       Pass     string `json:",optional"`
+       Tls      bool   `json:",optional"`
+       NonBlock bool   `json:",default=true"`
+       // PingTimeout is the timeout for ping redis.
+       PingTimeout time.Duration `json:",default=1s"`
+    }
 
-**pb/projectname/** 
+    // A RedisKeyConf is a redis config with key.
+    RedisKeyConf struct {
+       RedisConf
+       Key string
+    }
+)
 
-3、公共model，预定义错误，redis key，以及各种常量。推荐目录名字 
+// NewRedis returns a Redis.
+// Deprecated: use MustNewRedis or NewRedis instead.
+func (rc RedisConf) NewRedis() *Redis {
+    var opts []Option
+    if rc.Type == ClusterType {
+       opts = append(opts, Cluster())
+    }
+    if len(rc.Pass) > 0 {
+       opts = append(opts, WithPass(rc.Pass))
+    }
+    if rc.Tls {
+       opts = append(opts, WithTLS())
+    }
 
-**common/model/项目名.go**
+    return newRedis(rc.Host, opts...)
+}
+```
 
-**common/rediskey/项目名称.go** 
+## grpc pb协议。
 
-**common/constrant/项目名.go** 
+推荐是分仓库，不要多个项目的协议放在一个仓库中，减低多人开发相互影响。推荐名称
 
-**common/errs/项目名.go**
+如果多个项目在一个仓库中，实际项目中肯定会遇到。我们的改动这个版本不上线，你的改动这个版本上线。管理起来相对麻烦。
 
-4、utils：类型装换，hash方法，生成随机数。 一般只有一个函数。能用开源就用开源不要自己写。推荐目录名字 	**common/utils/timex.go**
-
- **common/utils/stringx.go**
-
-推荐几个常用的https://github.com/gookit/goutil，https://github.com/duke-git/lancet/tree/main
-
-如果是只有在自己用到的方法，不用放到common 直接在项目下定义projectName/tools 和utils做区分。
+**pb/projectname** 
 
 
 
-## 快速curd
 
-**后端的核心基本curd, 我比较推荐的快速curd的方法。 表结构驱动，gorm+gen组合**
 
-1、业务相关的单词提前定义，避免一个意思多个单词，积极维护相关的文档。
 
-2、数据类型提前定义，如涉及到钱的应该要提前定义好精度，数据库大家统一使用decimal字段。
+
+## 公共model，预定义错误，redis key，以及各种常量。
+
+推荐目录名字 
+
+**common/xmodel/项目名.go**  公共model 
+
+**common/xrediskey/项目名称.go**  公共rediskey 
+
+**common/xconstrant/项目名.go**   公共常量
+
+**common/xerrs/项目名.go** 公共错误
+
+**common/xutils/项目名.go** 公共工具 推荐几个常用的https://github.com/gookit/goutil，https://github.com/duke-git/lancet/tree/main
+
+
+
+在实际开发中如果是项目内共享的也可以，按照这样定义，前提不要加 x 可以定义为common/utils common/errs这样
+
+
+
+
+
+# 项目开发
+
+配置加载 viper
+
+参数验证 github.com/go-playground/validator/v10
+
+多语言 github.com/nicksnyder/go-i18n/v2/i18n
+
+快速curd 
+
+​	 mysql：gorm+gen
+
+​	mongoDB：go.mongodb.org/mongo-driver/bson 不推荐   https://github.com/qiniu/qmgo 有一些option 特性不支持
+
+
+
+业务相关的单词提前定义，避免一个意思多个单词，积极维护相关的文档。
+
+数据类型提前定义，如涉及到钱的应该要提前定义好精度，数据库大家统一使用decimal字段。
 
 ​     数据表如果存储大量的数据要定义每一列的数据类型。只要是值类型，int 能存下的不用bigint。
 
-​     时间类型统一时间戳。使用int64类型，主要是考虑到如果要存毫秒等情况，否则无符号int32也是可以
+​     时间类型统一时间戳。使用int64类型，数据库bigint
 
 ​     常用的表、且数据量比较大，索引设计要慎重。
 
-3、使用创建表的sql，通过grom 的gen生成对于的model，要提前定义好类型表结构到结构体的映射， 如果一个程序会用到多个数据库。要提前设计包的结构 一般的结构是 projectname/dao/model  如果用了多个数据库 则为 projectname/dao/dbname/model
+使用创建表的sql，通过grom 的gen生成对于的model，要提前定义好类型表结构到结构体的映射， 如果一个程序会用到多个数据库。要提前设计包的结构 一般的结构是 projectname/dao/model  如果用了多个数据库 则为 projectname/dao/dbname/model
 
 **重点，提前统一这些会在后期的开发中，避免很多很多坑。**
 
@@ -56,7 +120,7 @@
 
 **为啥微服务，我的理解**
 
-1、业务复杂，如果一直在一个单体应用上改。后面会搞的难以维护。
+1、业务复杂，如果一直在一个单体应用上改多人团队。后面会搞的难以维护。
 
 2、降低风险，提高容错。微服务一个服务挂了，影响的范围会小一点。
 
@@ -119,11 +183,27 @@ func (l *GetOrderListLogic) GetOrderList(req *types.GetOrderListReq) (resp *type
 
 **日志，链路追踪，指标采集。**
 
-**日志**   elk 。elk 依赖统一的日志格式，一定要提前封装日志组件.。一定要搞。
+### **日志**   
 
-**链路追踪** jaeger。如何你的调用链复杂，且业务比较重要，可以搞。一般的curd没啥必要，搞了一般也不看。
+elk 或者 loki + promtail+grafana
 
-**指标采集** prometheus。如果有专业的运维团队，且时间充裕可以搞。如果时间不充裕，且运维人手不够。不推荐。
+### **链路追踪** 
+
+jaeger。如何你的调用链复杂，且业务比较重要，可以搞。一般的curd没啥必要，搞了一般也不看。
+
+### **指标采集** 
+
+prometheus。项目能稳定运营了，有瓶颈了搞
+
+### 告警
+
+错误的日志输出的im中。
+
+grafana 可以配置告警 
+
+elk 也可以配置要收费
+
+https://github.com/ikun2021/zlog  代码直接输出到im中
 
 
 
@@ -145,8 +225,12 @@ func (l *GetOrderListLogic) GetOrderList(req *types.GetOrderListReq) (resp *type
 
 ## 目录结构
 
-如果使用了开源框架就按开源的来。
+如果使用了开源项目如go-zero这种就直接用开源的
+
+如果 团队有规范按照团队要求来
+
+如果 以上都没有
 
 api  服务参考 gin-vue-admin
 
-rpc 团队有要求就按照团队的来，否则基本也就是  api/controler--> service/logic-->dao。
+rpc 否则基本也就是  api/controler--> service/logic-->dao。

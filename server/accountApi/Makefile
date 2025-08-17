@@ -8,4 +8,4 @@ proto:
    #当要生成的pb文件有复杂的导入， 1.定义-I+grpcdemo/folder/imported.proto 指定要生成的proto文件的位置。其他的文件-Ipb一致
 
 doc:
-	@cd server && swag init
+	@swag init

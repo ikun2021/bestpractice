@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/luxun9527/zlog"
 	"github.com/spf13/viper"
+	"github/lunxun9527/bestpractice/pkg/xtrace"
 )
 
 type Config struct {
@@ -12,6 +13,7 @@ type Config struct {
 	Lang      struct {
 		Path string
 	}
+	JaegerTraceConf xtrace.JaegerTraceConf `mapstructure:"jaegerTraceConf"`
 }
 
 func InitConfig(path string) *Config {

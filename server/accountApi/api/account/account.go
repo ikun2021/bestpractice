@@ -12,9 +12,21 @@ var AccountApi = &accountApi{}
 
 type accountApi struct{}
 
+// GetAccountInfo
+// @Tags      GetAccountInfo
+// @Summary   获取账号信息
+// @Security  Account
+// @Produce   application/json
+// @Param     data  query  accountApiModel.GetAccountInfoReq  true  "请求参数"
+// @Success   200   {array}  accountApiModel.GetAccountInfoResp "账号信息"
+// @Router    /account/getAccountInfo [get]
 func (*accountApi) GetAccountInfo(c *gin.Context) {
-	accountId := c.GetString("accountId")
-	resp, err := accountService.UserService.GetAccountInfo(c, &accountApiModel.GetUserInfoReq{AccountId: accountId})
+	var req accountApiModel.GetAccountInfoReq
+	if err := c.ShouldBindQuery(&req); err != nil {
+		xgin.FailWithLangError(c, err)
+		return
+	}
+	resp, err := accountService.UserService.GetAccountInfo(c, &accountApiModel.GetAccountInfoReq{AccountId: req.AccountId})
 	xgin.ResponseWithLang(c, resp, err)
 }
 func (*accountApi) AddAccount(c *gin.Context) {

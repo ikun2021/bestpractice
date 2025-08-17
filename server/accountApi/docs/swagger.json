@@ -1,0 +1,68 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "AccountApi接口",
+        "title": "AccountApi接口",
+        "contact": {},
+        "version": "v2.7.9"
+    },
+    "basePath": "/",
+    "paths": {
+        "/account/getAccountInfo": {
+            "get": {
+                "security": [
+                    {
+                        "Account": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GetAccountInfo"
+                ],
+                "summary": "获取账号信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "accountId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "账号信息",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/account.GetAccountInfoResp"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "account.GetAccountInfoResp": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "string"
+                },
+                "accountName": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Base"
+        },
+        {
+            "description": "用户",
+            "name": "SysUser"
+        }
+    ]
+}

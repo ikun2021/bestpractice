@@ -4,6 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/luxun9527/zlog"
 	"github/lunxun9527/bestpractice/pkg/xgin"
+	"github/lunxun9527/bestpractice/server/accountApi/global"
+	"github/lunxun9527/bestpractice/server/accountApi/middleware"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -12,7 +14,14 @@ func InitRouter(engine *gin.Engine) {
 		zlog.Errorf("recovery from panic err %v", err)
 		xgin.FailWithLang(c)
 	}))
-	engine.Use(zlog.GetGinLogger())
+
+	engine.Use(middleware.Trace(global.Config.JaegerTraceConf))
+	engine.Use(func(c *gin.Context) {
+		zlog.InfofCtx(c.Request.Context(), "request path %s ", c.Request.URL.Path)
+
+		c.Next()
+	})
 	group := engine.Group("/api/v1")
+
 	initAccountRouter(group)
 }

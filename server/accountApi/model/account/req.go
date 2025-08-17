@@ -5,8 +5,8 @@ import (
 	"github/lunxun9527/bestpractice/pkg/xvalidator"
 )
 
-type GetUserInfoReq struct {
-	AccountId string `form:"accountId"`
+type GetAccountInfoReq struct {
+	AccountId string `form:"accountId" binding:"required"`
 }
 
 type RegisterUserReq struct{}

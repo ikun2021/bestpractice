@@ -6,6 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/luxun9527/zlog"
 	"github/lunxun9527/bestpractice/pkg/i18n"
+	"github/lunxun9527/bestpractice/pkg/xtrace"
 	"github/lunxun9527/bestpractice/pkg/xvalidator"
 	"github/lunxun9527/bestpractice/server/accountApi/config"
 	"github/lunxun9527/bestpractice/server/accountApi/global"
@@ -36,4 +37,9 @@ func Init(confPath string) {
 	v, _ := xvalidator.NewValidateTranslator(binding.Validator.Engine().(*validator.Validate))
 	xvalidator.SetDefaultValidateTranslator(v)
 	xvalidator.RegisterValidations()
+
+	//初始化jaeger
+	if err := xtrace.Init(global.Config.JaegerTraceConf); err != nil {
+		zlog.Panicf("jaeger init failed, err:%v", err)
+	}
 }

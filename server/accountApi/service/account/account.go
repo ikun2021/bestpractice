@@ -12,13 +12,13 @@ var UserService = &userService{}
 
 type userService struct{}
 
-func (*userService) GetAccountInfo(ctx context.Context, req *accountApiModel.GetUserInfoReq) (*accountApiModel.GetUserInfoResp, error) {
+func (*userService) GetAccountInfo(ctx context.Context, req *accountApiModel.GetAccountInfoReq) (*accountApiModel.GetAccountInfoResp, error) {
 	accountInfo, err := rpcClient.AccountClient.GetAccountInfo(ctx, &accountPb.GetAccountInfoReq{AccountId: req.AccountId})
 	if err != nil {
-		zlog.Errorf("GetAccountInfo err: %v", err)
+		zlog.Errorf("GetAccountInfoReq err: %v", err)
 		return nil, err
 	}
-	return &accountApiModel.GetUserInfoResp{
+	return &accountApiModel.GetAccountInfoResp{
 		AccountId:   accountInfo.AccountId,
 		AccountName: accountInfo.AccountName,
 	}, nil
@@ -30,7 +30,7 @@ func (*userService) AddAccount(ctx context.Context, req *accountApiModel.AddAcco
 		Password:    req.Password,
 	})
 	if err != nil {
-		zlog.Errorf("GetAccountInfo err: %v", err)
+		zlog.Errorf("GetAccountInfoReq err: %v", err)
 		return err
 	}
 	return nil

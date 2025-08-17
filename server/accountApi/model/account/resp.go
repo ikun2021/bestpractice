@@ -1,6 +1,6 @@
 package account
 
-type GetUserInfoResp struct {
+type GetAccountInfoResp struct {
 	AccountId   string `json:"accountId"`
 	AccountName string `json:"accountName"`
 }

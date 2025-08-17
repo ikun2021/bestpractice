@@ -1,0 +1,40 @@
+basePath: /
+definitions:
+  account.GetAccountInfoResp:
+    properties:
+      accountId:
+        type: string
+      accountName:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: AccountApi接口
+  title: AccountApi接口
+  version: v2.7.9
+paths:
+  /account/getAccountInfo:
+    get:
+      parameters:
+      - in: query
+        name: accountId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 账号信息
+          schema:
+            items:
+              $ref: '#/definitions/account.GetAccountInfoResp'
+            type: array
+      security:
+      - Account: []
+      summary: 获取账号信息
+      tags:
+      - GetAccountInfo
+swagger: "2.0"
+tags:
+- name: Base
+- description: 用户
+  name: SysUser

@@ -22,10 +22,13 @@ type accountApi struct{}
 // @Router    /account/getAccountInfo [get]
 func (*accountApi) GetAccountInfo(c *gin.Context) {
 	var req accountApiModel.GetAccountInfoReq
+	zlog.InfofCtx(c.Request.Context(), "get account info")
+
 	if err := c.ShouldBindQuery(&req); err != nil {
 		xgin.FailWithLangError(c, err)
 		return
 	}
+	zlog.InfofCtx(c.Request.Context(), "get account info")
 	resp, err := accountService.UserService.GetAccountInfo(c, &accountApiModel.GetAccountInfoReq{AccountId: req.AccountId})
 	xgin.ResponseWithLang(c, resp, err)
 }

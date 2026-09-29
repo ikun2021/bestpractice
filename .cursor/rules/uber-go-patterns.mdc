@@ -1,0 +1,52 @@
+---
+description: Uber Go 模式：功能选项用 Option 接口、表驱动测试、热路径性能与 lint
+globs: "**/*.go"
+alwaysApply: false
+---
+
+# 模式
+
+## 功能选项
+
+构造函数或公共 API 的可选参数达到 3 个，或以后还会增加时，使用 Option 接口，不要用闭包捕获值。
+
+```go
+type options struct {
+    cache  bool
+    logger *zap.Logger
+}
+
+type Option interface {
+    apply(*options)
+}
+
+func WithCache(c bool) Option { return cacheOption(c) }
+
+func Open(addr string, opts ...Option) (*Connection, error) {
+    options := options{cache: defaultCache, logger: zap.NewNop()}
+    for _, o := range opts {
+        o.apply(&options)
+    }
+    // ...
+}
+```
+
+`apply` 不导出。每种选项是独立类型，便于测试比较，也可以再实现 `fmt.Stringer`。
+
+## 表驱动测试
+
+重复的测试逻辑写成表，并用 `t.Run` 分子测试。切片命名为 `tests`，循环变量命名为 `tt`，输入字段用 `give` 前缀，期望字段用 `want` 前缀。
+
+调用 `t.Parallel()` 时，在循环体内再声明一次 `tt := tt`，避免子测试共享同一个循环变量。
+
+## 性能
+
+以下只用于高频路径，不要为了微优化改普通业务代码：
+
+- 基本类型和字符串互转用 `strconv`，不用 `fmt.Sprint`。
+- 固定字符串转 `[]byte` 只转换一次，循环里复用。
+- 已知元素数量时用 `make` 指定 slice 或 map 容量。
+
+## Lint
+
+全仓库使用同一套 golangci-lint 配置。至少启用 errcheck、goimports、govet、staticcheck。

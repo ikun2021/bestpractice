@@ -1,0 +1,44 @@
+---
+description: Uber Go 并发与资源：goroutine 生命周期、channel、mutex、atomic、defer、避免 init 与可变全局
+globs: "**/*.go"
+alwaysApply: false
+---
+
+# 并发与资源
+
+## goroutine 必须可停止、可等待
+
+不要泄漏 goroutine。每个 goroutine 要么会自行结束，要么能收到停止信号，并且调用方能阻塞等待它退出。
+
+- 多个：`sync.WaitGroup`。`Add` 放在 `go` 之前，函数内 `defer Done()`。
+- 单个：`done := make(chan struct{})`，goroutine 内 `defer close(done)`，调用方 `<-done`。
+- 长期循环要有 `stop` channel，`select` 里收到信号后返回。
+- 不要在 `init()` 里启动 goroutine。后台工作做成对象，提供 `Close` / `Stop` / `Shutdown`，在其中发停止信号并等待退出。
+- 会启动 goroutine 的包用 `go.uber.org/goleak` 检测泄漏。
+
+## channel
+
+容量只能是 0（无缓冲）或 1。更大的缓冲必须能说明背压和写满后的行为，不能用“够大就行”的魔数。
+
+## mutex
+
+- 使用零值：`var mu sync.Mutex`。不要 `new(sync.Mutex)`。
+- 作为具名字段 `mu sync.Mutex`，不要嵌入，未导出结构体也不嵌入。
+
+## atomic
+
+原子状态用 `go.uber.org/atomic`（如 `atomic.Bool` 的 `Swap` / `Load`）。不要用裸 `int32` 配合 `sync/atomic`，避免漏掉原子读写。
+
+## defer
+
+用 `defer` 释放锁、文件和其他资源。只在能证明函数处于纳秒级热路径时才手写释放。
+
+## 不要用可变全局做依赖
+
+把时钟、函数指针等依赖放进结构体，由构造函数注入。测试时替换字段，不要改包级变量。
+
+## init
+
+避免 `init()`。禁止在其中做 I/O、读环境或工作目录、依赖其他 `init` 的顺序。能写成包级变量或显式函数就不要用 `init`。
+
+可以保留的情况：无法写成单次赋值的表达式、数据库驱动或 codec 注册、确定性的预计算。

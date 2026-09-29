@@ -1,0 +1,44 @@
+---
+description: go-zero 微服务开发：Handler→Logic→Model 三层、goctl 生成、ServiceContext 注入。处理 .api/.proto 或 go-zero 项目时启用
+globs: "**/*.{go,api,proto}"
+alwaysApply: false
+---
+
+# go-zero 开发规则
+
+详细模式见 skill：`.cursor/skills/zero-skills/`（入口 `SKILL.md`）。需要细节时读取对应 reference，不要凭记忆手写样板。
+
+## 架构
+
+- 三层分离：Handler（HTTP）→ Logic（业务）→ Model（数据）
+- 业务逻辑不写在 Handler 里
+- 依赖通过 ServiceContext 注入
+
+## 代码生成
+
+- 样板用 `goctl` 生成，不要手写
+- HTTP 定义写在 `.api`，RPC 定义写在 `.proto`
+
+```bash
+goctl api go -api user.api -dir .
+goctl rpc protoc user.proto --go_out=. --go-grpc_out=. --zrpc_out=.
+```
+
+## HTTP 与配置
+
+- 错误：`httpx.Error(w, err)`；成功：`httpx.OkJson(w, resp)`
+- 不要直接 `fmt.Fprintf` / `w.Write`
+- 配置用 `conf.MustLoad`，不要硬编码端口、主机、密钥
+
+## Context
+
+各层始终传递 `ctx context.Context`，用于链路追踪、取消和超时。
+
+## 模式参考（按需读取）
+
+- REST：`.cursor/skills/zero-skills/references/rest-api-patterns.md`
+- RPC：`.cursor/skills/zero-skills/references/rpc-patterns.md`
+- 弹性：`.cursor/skills/zero-skills/references/resilience-patterns.md`
+- 排错：`.cursor/skills/zero-skills/troubleshooting/`
+
+不要加载或复述已移除的数据库模式（原 `database-patterns.md` / `goctl model`）。数据访问由项目自有封装负责，不在本 skill 范围内。

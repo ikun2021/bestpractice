@@ -1,0 +1,57 @@
+---
+description: Uber Go 错误处理：错误形式、包装、命名、只处理一次、禁止 panic、退出只在 main
+globs: "**/*.go"
+alwaysApply: false
+---
+
+# 错误处理
+
+## 选择错误形式
+
+| 调用方要匹配 | 消息 | 写法 |
+|---|---|---|
+| 否 | 静态 | `errors.New` |
+| 否 | 动态 | `fmt.Errorf` |
+| 是 | 静态 | 包级 `var ErrX = errors.New(...)`，用 `errors.Is` |
+| 是 | 动态 | 自定义 `error` 类型，用 `errors.As` |
+
+导出的错误变量或类型属于公共 API。
+
+## 包装
+
+- 没有额外上下文时原样返回。
+- 调用方需要看到根因：`fmt.Errorf("new store: %w", err)`。
+- 需要隐藏根因：用 `%v`。
+- 上下文保持简短，不要写 `failed to`。
+
+## 命名
+
+- 包级错误值：导出用 `Err` 前缀，未导出用 `err` 前缀（不加 `_`）。
+- 自定义错误类型用 `Error` 后缀：`NotFoundError`、`resolveError`。
+
+## 每个错误只处理一次
+
+不要既打日志又返回。三选一：
+
+- 包装后返回，交给上层处理
+- 记录日志并降级，不再返回
+- 用 `errors.Is` / `errors.As` 匹配可恢复分支，其余包装返回
+
+## 不要用 panic 做错误处理
+
+- 可恢复失败返回 `error`。
+- `panic` 只用于不可恢复故障，或启动期必须中止的初始化（如 `template.Must`）。
+- 测试失败用 `t.Fatal` / `t.FailNow`。
+- 类型断言必须用逗号 ok：`v, ok := i.(string)`。
+
+## 退出
+
+`os.Exit` 和 `log.Fatal*` 只允许出现在 `main`，且最多一处。其他函数返回 error，这样 `defer` 能执行，函数也可测试。
+
+```go
+func main() {
+    if err := run(); err != nil {
+        log.Fatal(err)
+    }
+}
+```

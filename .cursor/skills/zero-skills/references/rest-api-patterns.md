@@ -16,32 +16,7 @@ HTTP Request → Handler → Logic → External Services/Database
             Service Context (dependencies)
 ```
 
-## Handler Pattern
 
-### ✅ Correct Pattern
-
-Handlers should only handle HTTP-specific concerns:
-
-```go
-// internal/handler/userhandler.go
-func CreateUserHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        var req types.CreateUserRequest
-        if err := httpx.Parse(r, &req); err != nil {
-            httpx.ErrorCtx(r.Context(), w, err)
-            return
-        }
-
-        l := logic.NewCreateUserLogic(r.Context(), svcCtx)
-        resp, err := l.CreateUser(&req)
-        if err != nil {
-            httpx.ErrorCtx(r.Context(), w, err)
-        } else {
-            httpx.OkJsonCtx(r.Context(), w, resp)
-        }
-    }
-}
-```
 
 **Key Points:**
 - Parse request with `httpx.Parse(r, &req)`

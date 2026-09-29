@@ -1,0 +1,44 @@
+syntax = "v1"
+
+info (
+	title:   "user"
+	desc:    "user api"
+	author:  "ikun"
+	version: "v1"
+)
+
+type (
+	GetDeviceInfoReq {
+		Id string `form:"id"`
+	}
+	GetDeviceInfoResp {
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	GetPostInfoReq {
+		Id string `form:"id"`
+	}
+	GetPostInfoResp {
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+)
+
+@server (
+	group: device
+)
+service user {
+	@handler GetDeviceInfo
+	get /device/info (GetDeviceInfoReq) returns (GetDeviceInfoResp)
+}
+
+@server (
+	group: social
+)
+service user {
+	@handler GetPostInfo
+	get /post/info (GetPostInfoReq) returns (GetPostInfoResp)
+}
+
